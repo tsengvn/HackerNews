@@ -23,7 +23,9 @@ public class DiskCacheRepo implements CacheRepo {
     public DiskCacheRepo(File cacheDir, Gson gson) {
         this.gson = gson;
         try {
-            lruCache = DiskLruCache.open(cacheDir, 1, 2, CACHE_SIZE);
+            File itemFolder = new File(cacheDir, "item");
+            itemFolder.mkdir();
+            lruCache = DiskLruCache.open(itemFolder, 1, 2, CACHE_SIZE);
         } catch (IOException e) {
             e.printStackTrace();
         }

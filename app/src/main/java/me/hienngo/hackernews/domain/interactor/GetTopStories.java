@@ -28,7 +28,12 @@ public class GetTopStories {
         this.current = 0;
     }
 
-    public Observable<List<StoryModel>> getTopStories() {
+    public Observable<List<StoryModel>> getTopStories(boolean refresh) {
+        if (refresh) {
+            current = 0;
+            this.ids.clear();
+            cacheRepo.evictAll();
+        }
         if (this.ids.isEmpty()) {
             return hackerNewsRepo.getTopStories()
                     .flatMap(ids -> {

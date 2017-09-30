@@ -21,14 +21,7 @@ public class MainPresenter extends BasePresenter<MainView>{
 
     @Override
     public void onViewReady() {
-        getView().showLoading();
-        subscription = getTopStories.getTopStories()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(items -> {
-                    getView().onReceivedData(items, false);
-                    getView().dismissLoading();
-                }, this::onError);
+        getTopStories(false);
     }
 
     @Override
@@ -37,6 +30,10 @@ public class MainPresenter extends BasePresenter<MainView>{
             subscription.unsubscribe();
             subscription = null;
         }
+    }
+
+    public void refresh() {
+        getTopStories(true);
     }
 
     public void loadMore() {
@@ -57,4 +54,16 @@ public class MainPresenter extends BasePresenter<MainView>{
         throwable.printStackTrace();
         getView().showError(throwable.getMessage());
     }
+
+    private void getTopStories(boolean refresh) {
+        getView().showLoading();
+        subscription = getTopStories.getTopStories(refresh)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(items -> {
+                    getView().onReceivedData(items, false);
+                    getView().dismissLoading();
+                }, this::onError);
+    }
+
 }

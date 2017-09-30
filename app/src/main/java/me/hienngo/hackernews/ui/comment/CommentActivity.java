@@ -42,7 +42,7 @@ public class CommentActivity extends BaseActivity<CommentPresenter> implements C
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_comment);
 
         if (getSupportActionBar() != null) {
             ActionBar actionBar = getSupportActionBar();

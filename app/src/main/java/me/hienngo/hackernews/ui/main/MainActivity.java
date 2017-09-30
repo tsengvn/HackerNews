@@ -3,6 +3,7 @@ package me.hienngo.hackernews.ui.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -22,13 +23,16 @@ import me.hienngo.hackernews.ui.base.ItemClickListener;
 import me.hienngo.hackernews.ui.base.LoadMoreListener;
 import me.hienngo.hackernews.ui.comment.CommentActivity;
 
-public class MainActivity extends BaseActivity<MainPresenter> implements MainView, LoadMoreListener, ItemClickListener {
+public class MainActivity extends BaseActivity<MainPresenter> implements MainView, LoadMoreListener, ItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     @Inject
     GetTopStories getTopStories;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+
+    @BindView(R.id.swipeRefresh)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     private Snackbar loading;
     private LinearLayoutManager layoutManager;
@@ -39,6 +43,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        swipeRefreshLayout.setOnRefreshListener(this);
     }
 
 
@@ -89,16 +94,12 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
 
     @Override
     public void showLoading() {
-        loading = Snackbar.make(recyclerView, "Loading", Snackbar.LENGTH_INDEFINITE);
-        loading.show();
+        swipeRefreshLayout.setRefreshing(true);
     }
 
     @Override
     public void dismissLoading() {
-        if (loading != null) {
-            loading.dismiss();
-            loading = null;
-        }
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -123,5 +124,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         intent.putExtra("itemId", itemId);
         intent.putExtra("title", title);
         startActivity(intent);
+    }
+
+    @Override
+    public void onRefresh() {
+        getPresenter().refresh();
     }
 }
