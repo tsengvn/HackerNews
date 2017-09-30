@@ -8,6 +8,8 @@ import me.hienngo.hackernews.model.Item;
  */
 
 public interface CacheRepo  {
+    void evictAll();
+
     void cacheItem(Item item);
 
     Item getCache(long id);

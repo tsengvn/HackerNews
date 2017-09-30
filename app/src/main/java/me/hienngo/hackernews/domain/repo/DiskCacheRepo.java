@@ -52,5 +52,14 @@ public class DiskCacheRepo implements CacheRepo {
         return null;
     }
 
-
+    @Override
+    public void evictAll() {
+        if (lruCache != null) {
+            try {
+                lruCache.delete();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

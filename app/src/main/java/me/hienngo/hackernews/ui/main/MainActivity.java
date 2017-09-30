@@ -27,10 +27,14 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     RecyclerView recyclerView;
 
     private Snackbar loading;
+    private LinearLayoutManager layoutManager;
+    private int lastIndex=0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
     }
 
 
@@ -48,17 +52,24 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     public void onReceivedData(List<StoryModel> itemList, boolean isLoadMore) {
         StoryAdapter storyAdapter;
         if (recyclerView.getAdapter() == null) {
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            layoutManager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(layoutManager);
             recyclerView.addItemDecoration(new DividerItemDecoration(this, OrientationHelper.VERTICAL));
             storyAdapter = new StoryAdapter(this);
             storyAdapter.setListener(this);
+
             recyclerView.setAdapter(storyAdapter);
+
         } else {
             storyAdapter = (StoryAdapter) recyclerView.getAdapter();
         }
 
         storyAdapter.setDataList(itemList, isLoadMore);
 
+        if (lastIndex != 0) {
+            recyclerView.scrollToPosition(lastIndex);
+            lastIndex = 0;
+        }
     }
 
     @Override
@@ -84,4 +95,21 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
             loading = null;
         }
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (layoutManager != null) {
+            outState.putInt("index", layoutManager.findFirstCompletelyVisibleItemPosition());
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        if(savedInstanceState != null) {
+            lastIndex = savedInstanceState.getInt("index");
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
 }

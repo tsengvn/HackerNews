@@ -25,38 +25,49 @@ public class GetTopStories {
         this.hackerNewsRepo = hackerNewsRepo;
         this.cacheRepo = cacheRepo;
         this.ids = new ArrayList<>();
+        this.current = 0;
     }
 
     public Observable<List<StoryModel>> getTopStories() {
-        current = 0;
-        return hackerNewsRepo.getTopStories()
-                .doOnNext(ids -> {
-                    this.ids.clear();
-                    this.ids.addAll(ids);
-                })
-                .flatMap(ids -> Observable.from(getIdsToFetch()))
+        if (this.ids.isEmpty()) {
+            return hackerNewsRepo.getTopStories()
+                    .flatMap(ids -> {
+                        this.ids.addAll(ids);
+                        return mapIdsToStories();
+                        }
+                    );
+        } else {
+            return mapIdsToStories();
+        }
+    }
+
+    private Observable<List<StoryModel>> mapIdsToStories() {
+        return Observable.from(getIdsToFetch(0))
                 .map(this::getItem)
                 .filter(item -> item != null)
                 .map(StoryModel::new)
-                .toList()
-                .doOnNext(list -> current+= PAGE_ITEM);
+                .toList();
     }
 
     public Observable<List<StoryModel>> loadNext() {
-        return Observable.from(getIdsToFetch())
+        return Observable.from(getIdsToFetch(current))
                 .map(this::getItem)
                 .filter(item -> item != null)
                 .map(StoryModel::new)
-                .toList()
-                .doOnNext(list -> current+= PAGE_ITEM);
+                .toList();
 
     }
 
-    private List<Long> getIdsToFetch() {
-        if (current >= ids.size()) return new ArrayList<>();
-
-        int toIndex = (current + PAGE_ITEM < ids.size()) ? current + PAGE_ITEM : ids.size()-1;
-        return ids.subList(current, toIndex);
+    private List<Long> getIdsToFetch(int fromIndex) {
+        if (current >= ids.size()) {
+            //no more item to fetch
+            return new ArrayList<>();
+        } else if (fromIndex == 0 && current > 0) {
+            return ids.subList(fromIndex, current);
+        } else {
+            current = (current + PAGE_ITEM < ids.size()) ? current + PAGE_ITEM : ids.size()-1;
+            return ids.subList(fromIndex, current);
+        }
     }
 
     private Item getItem(long id){
