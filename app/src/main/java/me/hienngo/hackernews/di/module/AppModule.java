@@ -8,6 +8,10 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import me.hienngo.hackernews.domain.interactor.GetTopStories;
+import me.hienngo.hackernews.domain.repo.CacheRepo;
+import me.hienngo.hackernews.domain.repo.DiskCacheRepo;
+import me.hienngo.hackernews.domain.repo.HackerNewsRepo;
 
 /**
  * @author hienngo
@@ -31,5 +35,13 @@ public class AppModule {
         return new Gson();
     }
 
+    @Singleton @Provides
+    public GetTopStories provideGetTopStories(HackerNewsRepo hackerNewsRepo, CacheRepo cacheRepo) {
+        return new GetTopStories(hackerNewsRepo, cacheRepo);
+    }
 
+    @Singleton @Provides
+    public CacheRepo provideCacheRepo(Gson gson, Context context) {
+        return new DiskCacheRepo(context.getCacheDir(), gson);
+    }
 }

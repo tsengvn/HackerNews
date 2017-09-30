@@ -18,6 +18,7 @@ public abstract class BasePresenter<V extends BaseView> {
     }
 
     public void detachView() {
+        onViewDestroyed();
         this.view = null;
     }
 

@@ -1,4 +1,4 @@
-package me.hienngo.hackernews.modal;
+package me.hienngo.hackernews.model;
 
 import java.util.List;
 
@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Item {
     public long id;
+    public String by;
     public List<Long> kids;
     public long parent;
     public String text;

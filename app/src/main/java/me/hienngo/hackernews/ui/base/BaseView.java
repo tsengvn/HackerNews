@@ -6,4 +6,9 @@ package me.hienngo.hackernews.ui.base;
  */
 
 public interface BaseView {
+    void showError(String message);
+
+    void showLoading();
+
+    void dismissLoading();
 }

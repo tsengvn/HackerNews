@@ -2,7 +2,7 @@ package me.hienngo.hackernews.ui.main;
 
 import java.util.List;
 
-import me.hienngo.hackernews.modal.Item;
+import me.hienngo.hackernews.model.StoryModel;
 import me.hienngo.hackernews.ui.base.BaseView;
 
 /**
@@ -11,5 +11,5 @@ import me.hienngo.hackernews.ui.base.BaseView;
  */
 
 public interface MainView extends BaseView {
-    void onReceivedData(List<Item> itemList);
+    void onReceivedData(List<StoryModel> itemList, boolean more);
 }

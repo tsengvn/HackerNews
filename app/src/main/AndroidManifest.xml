@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="me.hienngo.hackernews">
 
-    <uses-sdk tools:overrideLibrary="all"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"

@@ -1,11 +1,7 @@
 package me.hienngo.hackernews.ui.main;
 
-import java.util.List;
-
-import me.hienngo.hackernews.domain.interactor.DataManager;
-import me.hienngo.hackernews.modal.Item;
+import me.hienngo.hackernews.domain.interactor.GetTopStories;
 import me.hienngo.hackernews.ui.base.BasePresenter;
-import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -16,19 +12,23 @@ import rx.schedulers.Schedulers;
  */
 
 public class MainPresenter extends BasePresenter<MainView>{
-    private final DataManager dataManager;
+    private final GetTopStories getTopStories;
 
     private Subscription subscription;
-    public MainPresenter(DataManager dataManager) {
-        this.dataManager = dataManager;
+    public MainPresenter(GetTopStories getTopStories) {
+        this.getTopStories = getTopStories;
     }
 
     @Override
     public void onViewReady() {
-        subscription = dataManager.getTopStories()
+        getView().showLoading();
+        subscription = getTopStories.getTopStories()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new DataSubscriber());
+                .subscribe(items -> {
+                    getView().onReceivedData(items, false);
+                    getView().dismissLoading();
+                }, this::onError);
     }
 
     @Override
@@ -39,22 +39,22 @@ public class MainPresenter extends BasePresenter<MainView>{
         }
     }
 
-    private class DataSubscriber extends Subscriber<List<Item>>{
-        @Override
-        public void onCompleted() {
-
-        }
-
-        @Override
-        public void onError(Throwable e) {
-
-        }
-
-        @Override
-        public void onNext(List<Item> items) {
-
+    public void loadMore() {
+        if (subscription != null && subscription.isUnsubscribed()) {
+            getView().showLoading();
+            subscription = getTopStories.loadNext()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(items -> {
+                        getView().onReceivedData(items, true);
+                        getView().dismissLoading();
+                    }, this::onError);
 
         }
     }
 
+    private void onError(Throwable throwable) {
+        throwable.printStackTrace();
+        getView().showError(throwable.getMessage());
+    }
 }
