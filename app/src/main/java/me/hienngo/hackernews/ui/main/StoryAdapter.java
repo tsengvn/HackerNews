@@ -13,6 +13,8 @@ import java.util.List;
 import butterknife.ButterKnife;
 import me.hienngo.hackernews.R;
 import me.hienngo.hackernews.model.StoryModel;
+import me.hienngo.hackernews.ui.base.ItemClickListener;
+import me.hienngo.hackernews.ui.base.LoadMoreListener;
 
 /**
  * @author hienngo
@@ -23,14 +25,19 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.ViewHolder> 
     private List<StoryModel> dataList;
     private LayoutInflater layoutInflater;
     private LoadMoreListener listener;
+    private ItemClickListener clickListener;
 
     public StoryAdapter(Context context) {
         this.dataList = new ArrayList<>();
         this.layoutInflater = LayoutInflater.from(context);
     }
 
-    public void setListener(LoadMoreListener listener) {
+    public void setLoadMoreListener(LoadMoreListener listener) {
         this.listener = listener;
+    }
+
+    public void setClickListener(ItemClickListener clickListener) {
+        this.clickListener = clickListener;
     }
 
     public void setDataList(List<StoryModel> dataList, boolean isLoadingMore) {
@@ -48,8 +55,12 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final StoryModel item = dataList.get(position);
-        holder.titleView.setText(item.title);
-        holder.infoView.setText(item.info);
+        holder.titleView.setText(item.getTitle());
+        holder.infoView.setText(item.getInfo());
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null)
+                clickListener.onItemClicked(item.getItemId(), item.getTitle());
+        });
 
         if (position == dataList.size()-1) {
             loadMore();
@@ -78,7 +89,4 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.ViewHolder> 
         }
     }
 
-    public interface LoadMoreListener {
-        void loadMore();
-    }
 }

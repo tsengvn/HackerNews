@@ -6,15 +6,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <TextView
-        android:id="@+id/tvTitle"
-        android:textColor="@android:color/black"
-        android:textStyle="bold"
+        android:id="@+id/tvInfo"
+        android:textColor="@android:color/darker_gray"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/tvInfo"
-        android:textColor="@android:color/darker_gray"
+        android:id="@+id/tvText"
+        android:textColor="@android:color/black"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

@@ -40,7 +40,7 @@ public class MainPresenter extends BasePresenter<MainView>{
     }
 
     public void loadMore() {
-        if (subscription != null && subscription.isUnsubscribed()) {
+        if (subscription == null || subscription.isUnsubscribed()) {
             getView().showLoading();
             subscription = getTopStories.loadNext()
                     .subscribeOn(Schedulers.io())

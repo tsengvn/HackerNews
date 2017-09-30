@@ -1,12 +1,14 @@
-package me.hienngo.hackernews.ui.main;
+package me.hienngo.hackernews.ui.comment;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 
 import java.util.List;
 
@@ -15,32 +17,44 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import me.hienngo.hackernews.R;
 import me.hienngo.hackernews.di.component.AppComponent;
-import me.hienngo.hackernews.domain.interactor.GetTopStories;
-import me.hienngo.hackernews.model.StoryModel;
+import me.hienngo.hackernews.domain.interactor.GetStoryComments;
+import me.hienngo.hackernews.model.CommentModel;
 import me.hienngo.hackernews.ui.base.BaseActivity;
-import me.hienngo.hackernews.ui.base.ItemClickListener;
 import me.hienngo.hackernews.ui.base.LoadMoreListener;
-import me.hienngo.hackernews.ui.comment.CommentActivity;
 
-public class MainActivity extends BaseActivity<MainPresenter> implements MainView, LoadMoreListener, ItemClickListener {
+/**
+ * @author hienngo
+ * @since 9/30/17
+ */
+
+public class CommentActivity extends BaseActivity<CommentPresenter> implements CommentView, LoadMoreListener {
 
     @Inject
-    GetTopStories getTopStories;
+    GetStoryComments getStoryComments;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
 
-    private Snackbar loading;
     private LinearLayoutManager layoutManager;
+    private Snackbar loading;
     private int lastIndex=0;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (getSupportActionBar() != null) {
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(getIntent().getStringExtra("title"));
+        }
     }
 
+    @Override
+    public CommentPresenter createPresenter() {
+        return new CommentPresenter(getStoryComments, getIntent().getLongExtra("itemId", 0));
+    }
 
     @Override
     public void initInjection(AppComponent appComponent) {
@@ -48,38 +62,27 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     }
 
     @Override
-    public MainPresenter createPresenter() {
-        return new MainPresenter(getTopStories);
-    }
-
-    @Override
-    public void onReceivedData(List<StoryModel> itemList, boolean isLoadMore) {
-        StoryAdapter storyAdapter;
+    public void onReceiveCommentData(List<CommentModel> commentModelList, boolean loadMore) {
+        CommentAdapter commentAdapter;
         if (recyclerView.getAdapter() == null) {
             layoutManager = new LinearLayoutManager(this);
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.addItemDecoration(new DividerItemDecoration(this, OrientationHelper.VERTICAL));
-            storyAdapter = new StoryAdapter(this);
-            storyAdapter.setLoadMoreListener(this);
-            storyAdapter.setClickListener(this);
+            commentAdapter = new CommentAdapter(this);
+            commentAdapter.setLoadMoreListener(this);
 
-            recyclerView.setAdapter(storyAdapter);
+            recyclerView.setAdapter(commentAdapter);
 
         } else {
-            storyAdapter = (StoryAdapter) recyclerView.getAdapter();
+            commentAdapter = (CommentAdapter) recyclerView.getAdapter();
         }
 
-        storyAdapter.setDataList(itemList, isLoadMore);
+        commentAdapter.setDataList(commentModelList, loadMore);
 
         if (lastIndex != 0) {
             recyclerView.scrollToPosition(lastIndex);
             lastIndex = 0;
         }
-    }
-
-    @Override
-    public void loadMore() {
-        getPresenter().loadMore();
     }
 
     @Override
@@ -101,6 +104,12 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         }
     }
 
+
+    @Override
+    public void loadMore() {
+        getPresenter().loadMore();
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (layoutManager != null) {
@@ -118,10 +127,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     }
 
     @Override
-    public void onItemClicked(long itemId, String title) {
-        Intent intent = new Intent(this, CommentActivity.class);
-        intent.putExtra("itemId", itemId);
-        intent.putExtra("title", title);
-        startActivity(intent);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

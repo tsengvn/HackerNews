@@ -5,6 +5,7 @@ import com.jakewharton.disklrucache.DiskLruCache;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import me.hienngo.hackernews.model.Item;
 
@@ -15,13 +16,14 @@ import me.hienngo.hackernews.model.Item;
 
 public class DiskCacheRepo implements CacheRepo {
     private static final long CACHE_SIZE = 10_000_000;
+    private static final long CACHE_DURATION = TimeUnit.MINUTES.toMillis(5);
     private DiskLruCache lruCache;
     private final Gson gson;
 
     public DiskCacheRepo(File cacheDir, Gson gson) {
         this.gson = gson;
         try {
-            lruCache = DiskLruCache.open(cacheDir, 1, 1, CACHE_SIZE);
+            lruCache = DiskLruCache.open(cacheDir, 1, 2, CACHE_SIZE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -32,6 +34,7 @@ public class DiskCacheRepo implements CacheRepo {
             try {
                 DiskLruCache.Editor editor = lruCache.edit(String.valueOf(item.id));
                 editor.set(0, gson.toJson(item));
+                editor.set(1, String.valueOf(System.currentTimeMillis()));
                 editor.commit();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -43,8 +46,11 @@ public class DiskCacheRepo implements CacheRepo {
     public Item getCache(long id) {
         if (lruCache != null) {
             try {
-                Item item = gson.fromJson(lruCache.get(String.valueOf(id)).getString(0), Item.class);
-                return item;
+                DiskLruCache.Snapshot snapshot = lruCache.get(String.valueOf(id));
+                long savedTime = Long.parseLong(snapshot.getString(1));
+                if (System.currentTimeMillis() - savedTime < CACHE_DURATION) {
+                    return gson.fromJson(snapshot.getString(0), Item.class);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

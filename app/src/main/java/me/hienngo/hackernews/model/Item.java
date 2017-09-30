@@ -18,4 +18,6 @@ public class Item {
     public String type;
     public String url;
     public int score;
+    public boolean deleted;
+    public boolean dead;
 }
