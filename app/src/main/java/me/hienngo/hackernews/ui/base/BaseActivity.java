@@ -14,7 +14,7 @@ import me.hienngo.hackernews.di.component.AppComponent;
  * @since 9/29/17
  */
 
-public abstract class BaseActivity<T extends BasePresenter> extends AppCompatActivity implements BaseView{
+public abstract class BaseActivity<T extends BasePresenter> extends AppCompatActivity implements BaseView {
     public abstract T createPresenter();
     public abstract void initInjection(AppComponent appComponent);
 

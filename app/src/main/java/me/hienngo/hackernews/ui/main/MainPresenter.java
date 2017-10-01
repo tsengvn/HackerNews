@@ -1,5 +1,7 @@
 package me.hienngo.hackernews.ui.main;
 
+import android.support.annotation.VisibleForTesting;
+
 import me.hienngo.hackernews.domain.interactor.GetTopStories;
 import me.hienngo.hackernews.ui.base.BasePresenter;
 import rx.Subscription;
@@ -14,6 +16,7 @@ import rx.schedulers.Schedulers;
 public class MainPresenter extends BasePresenter<MainView>{
     private final GetTopStories getTopStories;
 
+    @VisibleForTesting
     private Subscription subscription;
     public MainPresenter(GetTopStories getTopStories) {
         this.getTopStories = getTopStories;
@@ -51,11 +54,11 @@ public class MainPresenter extends BasePresenter<MainView>{
     }
 
     private void onError(Throwable throwable) {
-        throwable.printStackTrace();
+        getView().dismissLoading();
         getView().showError(throwable.getMessage());
     }
 
-    private void getTopStories(boolean refresh) {
+    void getTopStories(boolean refresh) {
         getView().showLoading();
         subscription = getTopStories.getTopStories(refresh)
                 .subscribeOn(Schedulers.io())

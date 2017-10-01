@@ -1,11 +1,9 @@
 package me.hienngo.hackernews.model;
 
-import android.content.Context;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.TypedValue;
 
 /**
  * @author hienngo
@@ -44,7 +42,4 @@ public class CommentModel {
         return info;
     }
 
-    public int getPadding(Context context) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, level*24, context.getResources().getDisplayMetrics());
-    }
 }
