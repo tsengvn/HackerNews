@@ -17,9 +17,11 @@ import me.hienngo.hackernews.ui.BaseTest;
 import rx.Observable;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,6 +79,52 @@ public class MainPresenterTest extends BaseTest{
         assertEquals("Test error", captor.getValue());
 
     }
+    @Test
+    public void testRefreshData() {
+        testLoadDataWhenViewReady();
+
+        ArgumentCaptor<Boolean> captorBoolean = ArgumentCaptor.forClass(Boolean.class);
+        ArgumentCaptor<List> captorList = ArgumentCaptor.forClass(List.class);
+
+        //refresh
+        List<StoryModel> storyModels2 = new ArrayList<>();
+        Observable<List<StoryModel>> listObservable2 = Observable.just(storyModels2);
+        when(getTopStories.getTopStories(true)).thenReturn(listObservable2);
+
+        mainPresenter.refresh();
+        verify(mainView, times(2)).showLoading();
+        verify(mainView, times(2)).onReceivedData(captorList.capture(), captorBoolean.capture());
+        verify(mainView, times(2)).dismissLoading();
+        assertEquals(Boolean.FALSE, captorBoolean.getValue());
+        assertEquals(storyModels2, captorList.getValue());
+    }
+
+    @Test
+    public void testLoadMore() {
+        testLoadDataWhenViewReady();
+
+        ArgumentCaptor<Boolean> captorBoolean = ArgumentCaptor.forClass(Boolean.class);
+        ArgumentCaptor<List> captorList = ArgumentCaptor.forClass(List.class);
+
+        //load more
+        List<StoryModel> list = new ArrayList<>();
+        when(getTopStories.loadNext()).thenReturn(Observable.just(list));
+
+        mainPresenter.loadMore();
+        verify(mainView, times(2)).showLoading();
+        verify(mainView, times(2)).onReceivedData(captorList.capture(), captorBoolean.capture());
+        verify(mainView, times(2)).dismissLoading();
+        assertEquals(Boolean.TRUE, captorBoolean.getValue());
+        assertEquals(list, captorList.getValue());
+
+    }
 
 
+    @Test
+    public void testViewDestroyed() {
+        testLoadDataWhenViewReady();
+
+        mainPresenter.detachView();
+        assertNull(mainPresenter.subscription);
+    }
 }

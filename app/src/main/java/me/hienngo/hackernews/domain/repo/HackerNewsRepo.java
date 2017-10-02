@@ -19,9 +19,9 @@ public interface HackerNewsRepo {
 
 //    @GET("item/{id}.json")
 //    Call<Item> getItemDetail(@Path("id") long id);
-
-    @GET("item/{id}.json")
-    Observable<Item> getItemDetail(@Path("id") long id);
+//
+//    @GET("item/{id}.json")
+//    Observable<Item> getItemDetail(@Path("id") long id);
 
     @GET("item/{id}.json")
     Call<Item> getItem(@Path("id") long id);

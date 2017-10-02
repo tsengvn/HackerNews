@@ -1,7 +1,5 @@
 package me.hienngo.hackernews.ui.main;
 
-import android.support.annotation.VisibleForTesting;
-
 import me.hienngo.hackernews.domain.interactor.GetTopStories;
 import me.hienngo.hackernews.ui.base.BasePresenter;
 import rx.Subscription;
@@ -16,8 +14,8 @@ import rx.schedulers.Schedulers;
 public class MainPresenter extends BasePresenter<MainView>{
     private final GetTopStories getTopStories;
 
-    @VisibleForTesting
-    private Subscription subscription;
+    Subscription subscription;
+
     public MainPresenter(GetTopStories getTopStories) {
         this.getTopStories = getTopStories;
     }

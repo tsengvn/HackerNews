@@ -14,7 +14,8 @@ import rx.schedulers.Schedulers;
 class CommentPresenter extends BasePresenter<CommentView> {
     private final GetStoryComments getStoryComments;
     private final long itemId;
-    private Subscription subscription;
+
+    Subscription subscription;
     CommentPresenter(GetStoryComments getStoryComments, long itemId) {
         this.getStoryComments = getStoryComments;
         this.itemId = itemId;
@@ -30,7 +31,7 @@ class CommentPresenter extends BasePresenter<CommentView> {
                     getView().dismissLoading();
                     getView().onReceiveCommentData(commentModels, false);
                 }, throwable -> {
-                    throwable.printStackTrace();
+//                    throwable.printStackTrace();
                     getView().dismissLoading();
                     getView().showError(throwable.getMessage());
                 });

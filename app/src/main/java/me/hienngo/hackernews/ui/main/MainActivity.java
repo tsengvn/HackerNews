@@ -34,7 +34,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     @BindView(R.id.swipeRefresh)
     SwipeRefreshLayout swipeRefreshLayout;
 
-    private Snackbar loading;
     private LinearLayoutManager layoutManager;
     private int lastIndex=0;
 
@@ -42,7 +41,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         swipeRefreshLayout.setOnRefreshListener(this);
     }
 

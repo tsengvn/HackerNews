@@ -2,11 +2,11 @@ package me.hienngo.hackernews.domain.interactor;
 
 import com.annimon.stream.Stream;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import me.hienngo.hackernews.AppConfig;
 import me.hienngo.hackernews.domain.repo.CacheRepo;
 import me.hienngo.hackernews.domain.repo.HackerNewsRepo;
 import me.hienngo.hackernews.model.CommentModel;
@@ -19,14 +19,15 @@ import rx.Observable;
  */
 
 public class GetStoryComments {
-    private static final int PAGE_ITEM = 10;
+    private final AppConfig appConfig;
     private final HackerNewsRepo hackerNewsRepo;
     private final CacheRepo cacheRepo;
     private final Stack<PendingItem> idStack;
     private List<CommentModel> dataList;
 
     private long currentStoryId;
-    public GetStoryComments(HackerNewsRepo hackerNewsRepo, CacheRepo cacheRepo) {
+    public GetStoryComments(HackerNewsRepo hackerNewsRepo, CacheRepo cacheRepo, AppConfig appConfig) {
+        this.appConfig = appConfig;
         this.hackerNewsRepo = hackerNewsRepo;
         this.cacheRepo = cacheRepo;
         this.idStack = new Stack<>();
@@ -44,8 +45,15 @@ public class GetStoryComments {
                     .map(this::getItem)
                     .filter(item -> item != null)
                     .flatMap(item -> {
-                        addToStack(item.kids, 1);
-                        return loadCommentInStack();
+                        if (item == null) {
+                            return Observable.error(new RuntimeException("Can not retrieved story's comment"));
+                        } else if (item.kids == null || item.kids.size() == 0) {
+                            return Observable.error(new RuntimeException("No comment"));
+                        } else {
+                            addToStack(item.kids, 1);
+                            return loadCommentInStack();
+                        }
+
                     })
                     .doOnNext(commentModels -> dataList.addAll(commentModels));
         }
@@ -69,7 +77,7 @@ public class GetStoryComments {
                     result.add(mapItemToComment(comment, pendingItem.level));
                 }
 
-                if (result.size() == PAGE_ITEM) {
+                if (result.size() == appConfig.getCommentPageItem()) {
                     break;
                 }
             }
@@ -87,7 +95,7 @@ public class GetStoryComments {
 
     private void addToStack(List<Long> ids, int level) {
         if (level == 1) {
-            Stream.range(1, ids.size()).map(index -> ids.get(ids.size()-index))
+            Stream.rangeClosed(1, ids.size()).map(index -> ids.get(ids.size()-index))
                     .map(id -> new PendingItem(id, level)).forEach(idStack::push);
         } else {
             Stream.of(ids).map(id -> new PendingItem(id, level)).forEach(idStack::push);
@@ -103,7 +111,7 @@ public class GetStoryComments {
                 cacheRepo.cacheItem(item);
             }
             return item;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.hienngo.hackernews.AppConfig;
 import me.hienngo.hackernews.domain.repo.CacheRepo;
 import me.hienngo.hackernews.domain.repo.HackerNewsRepo;
 import me.hienngo.hackernews.model.Item;
@@ -18,22 +19,24 @@ import rx.Observable;
 public class GetTopStories {
     private final HackerNewsRepo hackerNewsRepo;
     private final CacheRepo cacheRepo;
-    private static final int PAGE_ITEM = 10;
+    private final AppConfig appConfig;
+
     private List<Long> ids;
     private int current = 0;
-    public GetTopStories(HackerNewsRepo hackerNewsRepo, CacheRepo cacheRepo) {
+
+    public GetTopStories(HackerNewsRepo hackerNewsRepo, CacheRepo cacheRepo, AppConfig appConfig) {
         this.hackerNewsRepo = hackerNewsRepo;
         this.cacheRepo = cacheRepo;
+        this.appConfig = appConfig;
         this.ids = new ArrayList<>();
         this.current = 0;
     }
 
     public Observable<List<StoryModel>> getTopStories(boolean refresh) {
         if (refresh) {
-            current = 0;
-            this.ids.clear();
-            cacheRepo.evictAll();
+            clearCurrentData();
         }
+
         if (this.ids.isEmpty()) {
             return hackerNewsRepo.getTopStories()
                     .flatMap(ids -> {
@@ -44,6 +47,12 @@ public class GetTopStories {
         } else {
             return mapIdsToStories();
         }
+    }
+
+    void clearCurrentData() {
+        current = 0;
+        this.ids.clear();
+        cacheRepo.evictAll();
     }
 
     private Observable<List<StoryModel>> mapIdsToStories() {
@@ -70,7 +79,7 @@ public class GetTopStories {
         } else if (fromIndex == 0 && current > 0) {
             return ids.subList(fromIndex, current);
         } else {
-            current = (current + PAGE_ITEM < ids.size()) ? current + PAGE_ITEM : ids.size()-1;
+            current = (current + appConfig.getStoryPageItem() < ids.size()) ? current + appConfig.getStoryPageItem() : ids.size();
             return ids.subList(fromIndex, current);
         }
     }
