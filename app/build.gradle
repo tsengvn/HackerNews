@@ -88,4 +88,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
     sourceDirectories = files([mainSrc])
     classDirectories = files([debugTree])
     executionData = files("${buildDir}/jacoco/testDebugUnitTest.exec")
+
+    doLast {
+        println "Test output result : " + reports.html.entryPoint
+    }
+
 }

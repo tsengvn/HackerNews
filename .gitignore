@@ -1,0 +1,6 @@
+.idea/*
+.gradle/*
+HackerNews.iml
+local.properties
+build/*
+app.iml
