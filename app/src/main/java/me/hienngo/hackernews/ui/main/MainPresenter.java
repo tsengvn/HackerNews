@@ -1,10 +1,11 @@
 package me.hienngo.hackernews.ui.main;
 
+import android.util.Log;
+
 import me.hienngo.hackernews.domain.interactor.GetTopStories;
 import me.hienngo.hackernews.ui.base.BasePresenter;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * @author hienngo
@@ -31,6 +32,7 @@ public class MainPresenter extends BasePresenter<MainView>{
             subscription.unsubscribe();
             subscription = null;
         }
+        getView().dismissLoading();
     }
 
     public void refresh() {
@@ -41,7 +43,6 @@ public class MainPresenter extends BasePresenter<MainView>{
         if (subscription == null || subscription.isUnsubscribed()) {
             getView().showLoading();
             subscription = getTopStories.loadNext()
-                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(items -> {
                         getView().onReceivedData(items, true);
@@ -59,9 +60,9 @@ public class MainPresenter extends BasePresenter<MainView>{
     void getTopStories(boolean refresh) {
         getView().showLoading();
         subscription = getTopStories.getTopStories(refresh)
-                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(items -> {
+                    Log.v("nmh", "get saved data " + items.size());
                     getView().onReceivedData(items, false);
                     getView().dismissLoading();
                 }, this::onError);

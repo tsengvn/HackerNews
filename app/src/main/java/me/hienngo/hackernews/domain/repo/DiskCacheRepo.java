@@ -19,13 +19,19 @@ public class DiskCacheRepo implements CacheRepo {
     private static final long CACHE_DURATION = TimeUnit.MINUTES.toMillis(5);
     private DiskLruCache lruCache;
     private final Gson gson;
+    private final File cacheDir;
 
     public DiskCacheRepo(File cacheDir, Gson gson) {
         this.gson = gson;
+        this.cacheDir = cacheDir;
+        openCache();
+    }
+
+    private void openCache() {
         try {
             File itemFolder = new File(cacheDir, "item");
             itemFolder.mkdir();
-            lruCache = DiskLruCache.open(itemFolder, 1, 2, CACHE_SIZE);
+            lruCache = DiskLruCache.open(itemFolder, 2, 2, CACHE_SIZE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,6 +71,7 @@ public class DiskCacheRepo implements CacheRepo {
         if (lruCache != null) {
             try {
                 lruCache.delete();
+                openCache();
             } catch (IOException e) {
                 e.printStackTrace();
             }

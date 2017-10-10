@@ -10,6 +10,7 @@ import me.hienngo.hackernews.domain.repo.HackerNewsRepo;
 import me.hienngo.hackernews.model.Item;
 import me.hienngo.hackernews.model.StoryModel;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 /**
  * @author hienngo
@@ -23,12 +24,14 @@ public class GetTopStories {
 
     private List<Long> ids;
     private int current = 0;
+    private List<StoryModel> currentStoryList;
 
     public GetTopStories(HackerNewsRepo hackerNewsRepo, CacheRepo cacheRepo, AppConfig appConfig) {
         this.hackerNewsRepo = hackerNewsRepo;
         this.cacheRepo = cacheRepo;
         this.appConfig = appConfig;
         this.ids = new ArrayList<>();
+        this.currentStoryList = new ArrayList<>();
         this.current = 0;
     }
 
@@ -39,36 +42,42 @@ public class GetTopStories {
 
         if (this.ids.isEmpty()) {
             return hackerNewsRepo.getTopStories()
+                    .subscribeOn(Schedulers.io())
                     .flatMap(ids -> {
-                        this.ids.addAll(ids);
-                        return mapIdsToStories();
+                            this.ids.addAll(ids);
+                            return mapIdsToStories();
                         }
                     );
         } else {
-            return mapIdsToStories();
+            return Observable.just(currentStoryList);
         }
     }
 
     void clearCurrentData() {
         current = 0;
         this.ids.clear();
+        currentStoryList.clear();
         cacheRepo.evictAll();
     }
 
     private Observable<List<StoryModel>> mapIdsToStories() {
         return Observable.from(getIdsToFetch(0))
+                .observeOn(Schedulers.io())
                 .map(this::getItem)
                 .filter(item -> item != null)
                 .map(StoryModel::new)
-                .toList();
+                .toList()
+                .doOnNext(storyModels -> currentStoryList.addAll(storyModels));
     }
 
     public Observable<List<StoryModel>> loadNext() {
         return Observable.from(getIdsToFetch(current))
+                .observeOn(Schedulers.io())
                 .map(this::getItem)
                 .filter(item -> item != null)
                 .map(StoryModel::new)
-                .toList();
+                .toList()
+                .doOnNext(storyModels -> currentStoryList.addAll(storyModels));
 
     }
 

@@ -25,13 +25,11 @@ class CommentPresenter extends BasePresenter<CommentView> {
     public void onViewReady() {
         getView().showLoading();
         subscription = getStoryComments.loadCommentForStory(itemId)
-                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(commentModels -> {
                     getView().dismissLoading();
                     getView().onReceiveCommentData(commentModels, false);
                 }, throwable -> {
-//                    throwable.printStackTrace();
                     getView().dismissLoading();
                     getView().showError(throwable.getMessage());
                 });
@@ -43,6 +41,7 @@ class CommentPresenter extends BasePresenter<CommentView> {
             subscription.unsubscribe();
             subscription = null;
         }
+        getView().dismissLoading();
     }
 
     public void loadMore() {
@@ -55,7 +54,6 @@ class CommentPresenter extends BasePresenter<CommentView> {
                         getView().dismissLoading();
                         getView().onReceiveCommentData(commentModels, true);
                     }, throwable -> {
-                        throwable.printStackTrace();
                         getView().dismissLoading();
                         getView().showError(throwable.getMessage());
                     });

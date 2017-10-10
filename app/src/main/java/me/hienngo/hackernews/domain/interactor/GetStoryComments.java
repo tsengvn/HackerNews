@@ -12,6 +12,7 @@ import me.hienngo.hackernews.domain.repo.HackerNewsRepo;
 import me.hienngo.hackernews.model.CommentModel;
 import me.hienngo.hackernews.model.Item;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 /**
  * @author hienngo
@@ -42,6 +43,7 @@ public class GetStoryComments {
             dataList.clear();
             idStack.clear();
             return Observable.just(storyId)
+                    .observeOn(Schedulers.io())
                     .map(this::getItem)
                     .filter(item -> item != null)
                     .flatMap(item -> {

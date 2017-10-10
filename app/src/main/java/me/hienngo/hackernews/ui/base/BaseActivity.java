@@ -25,7 +25,7 @@ public abstract class BaseActivity<T extends BasePresenter> extends AppCompatAct
         super.onCreate(savedInstanceState);
         initInjection(HNApp.appComponent(this));
 
-        Object instance = getLastNonConfigurationInstance();
+        Object instance = getLastCustomNonConfigurationInstance();
         if (instance != null) {
             try {
                 presenter = (T) instance;
