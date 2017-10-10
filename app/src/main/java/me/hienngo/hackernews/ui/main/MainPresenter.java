@@ -1,7 +1,5 @@
 package me.hienngo.hackernews.ui.main;
 
-import android.util.Log;
-
 import me.hienngo.hackernews.domain.interactor.GetTopStories;
 import me.hienngo.hackernews.ui.base.BasePresenter;
 import rx.Subscription;
@@ -62,7 +60,6 @@ public class MainPresenter extends BasePresenter<MainView>{
         subscription = getTopStories.getTopStories(refresh)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(items -> {
-                    Log.v("nmh", "get saved data " + items.size());
                     getView().onReceivedData(items, false);
                     getView().dismissLoading();
                 }, this::onError);
