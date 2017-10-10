@@ -22,6 +22,7 @@ import me.hienngo.hackernews.ui.base.BaseActivity;
 import me.hienngo.hackernews.ui.base.ItemClickListener;
 import me.hienngo.hackernews.ui.base.LoadMoreListener;
 import me.hienngo.hackernews.ui.comment.CommentActivity;
+import me.hienngo.hackernews.util.ScrollUtil;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements MainView, LoadMoreListener, ItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
@@ -35,7 +36,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     SwipeRefreshLayout swipeRefreshLayout;
 
     private LinearLayoutManager layoutManager;
-    private int lastIndex=0;
+    private Bundle savedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,9 +75,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
 
         storyAdapter.setDataList(itemList, isLoadMore);
 
-        if (lastIndex != 0) {
-            recyclerView.scrollToPosition(lastIndex);
-            lastIndex = 0;
+        if (savedState != null) {
+            ScrollUtil.restoreLastScrollPosition(recyclerView, savedState);
+            savedState = null;
         }
     }
 
@@ -102,16 +103,14 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if (layoutManager != null) {
-            outState.putInt("index", layoutManager.findFirstCompletelyVisibleItemPosition());
-        }
+        ScrollUtil.saveCurrentScrollPosition(recyclerView, outState);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         if(savedInstanceState != null) {
-            lastIndex = savedInstanceState.getInt("index");
+            savedState = savedInstanceState;
         }
         super.onRestoreInstanceState(savedInstanceState);
     }

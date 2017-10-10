@@ -21,6 +21,7 @@ import me.hienngo.hackernews.domain.interactor.GetStoryComments;
 import me.hienngo.hackernews.model.CommentModel;
 import me.hienngo.hackernews.ui.base.BaseActivity;
 import me.hienngo.hackernews.ui.base.LoadMoreListener;
+import me.hienngo.hackernews.util.ScrollUtil;
 
 /**
  * @author hienngo
@@ -37,7 +38,7 @@ public class CommentActivity extends BaseActivity<CommentPresenter> implements C
 
     private LinearLayoutManager layoutManager;
     private Snackbar loading;
-    private int lastIndex=0;
+    private Bundle savedState;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,9 +80,9 @@ public class CommentActivity extends BaseActivity<CommentPresenter> implements C
 
         commentAdapter.setDataList(commentModelList, loadMore);
 
-        if (lastIndex != 0) {
-            recyclerView.scrollToPosition(lastIndex);
-            lastIndex = 0;
+        if (savedState != null) {
+            ScrollUtil.restoreLastScrollPosition(recyclerView, savedState);
+            savedState = null;
         }
     }
 
@@ -113,7 +114,7 @@ public class CommentActivity extends BaseActivity<CommentPresenter> implements C
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (layoutManager != null) {
-            outState.putInt("index", layoutManager.findFirstCompletelyVisibleItemPosition());
+            ScrollUtil.saveCurrentScrollPosition(recyclerView, outState);
         }
         super.onSaveInstanceState(outState);
     }
@@ -121,7 +122,7 @@ public class CommentActivity extends BaseActivity<CommentPresenter> implements C
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         if(savedInstanceState != null) {
-            lastIndex = savedInstanceState.getInt("index");
+            savedState = savedInstanceState;
         }
         super.onRestoreInstanceState(savedInstanceState);
     }
