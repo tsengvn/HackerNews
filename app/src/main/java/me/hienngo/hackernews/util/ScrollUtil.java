@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 /**
  * @author hienngo
@@ -15,19 +16,26 @@ public class ScrollUtil {
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
         if (layoutManager != null && layoutManager instanceof LinearLayoutManager) {
             int currentPos = ((LinearLayoutManager) layoutManager).findFirstVisibleItemPosition();
-            int offset = recyclerView.getChildAt(0).getTop();
+            float offsetPercent = (float)recyclerView.getChildAt(0).getTop()/(float)recyclerView.getChildAt(0).getHeight();
 
             outState.putInt("position", currentPos);
-            outState.putInt("offset", offset);
+            outState.putFloat("offsetPercent", offsetPercent);
         }
     }
 
     public static void restoreLastScrollPosition(@NonNull RecyclerView recyclerView, @NonNull Bundle savedState) {
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
         if (layoutManager != null && layoutManager instanceof LinearLayoutManager
-                && savedState.containsKey("position") && savedState.containsKey("offset")) {
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(savedState.getInt("position"),
-                    savedState.getInt("offset"));
+                && savedState.containsKey("position") && savedState.containsKey("offsetPercent")) {
+            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
+            int position = savedState.getInt("position");
+            float offsetPercent = savedState.getFloat("offsetPercent");
+            linearLayoutManager.scrollToPosition(position);
+            recyclerView.post(() -> {
+                View view = linearLayoutManager.findViewByPosition(position);
+                int offset = view != null ? (int) (offsetPercent * view.getHeight()) : 0;
+                linearLayoutManager.scrollToPositionWithOffset(position, offset);
+            });
         }
     }
 }
